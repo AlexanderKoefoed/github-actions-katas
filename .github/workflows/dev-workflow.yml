@@ -1,0 +1,59 @@
+name: Java CI
+on:
+  push:
+    branches:
+      - dev/**
+env:
+  docker_username: ${{ secrets.DOCKER_USERNAME }}
+  docker_password: ${{ secrets.DOCKER_PASSWORD }}
+  GIT_COMMIT: ${{ github.sha }}
+jobs:
+  Clone-down:
+    name: Clone down repo
+    runs-on: ubuntu-latest
+    container: gradle:6-jdk11
+    steps:
+      - name: Clone-build
+        uses: actions/checkout@v2
+      - name: Upload Repo
+        uses: actions/upload-artifact@v2
+        with:
+          name: code
+          path: .
+  Build:
+    needs: Clone-down
+    runs-on: ubuntu-latest
+    container: gradle:6-jdk11
+    steps:
+      - name: Download code artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: code
+          path: .
+      - name: Build with Gradle
+        run: chmod +x ci/build-app.sh && ci/build-app.sh
+      - name: Test with Gradle
+        run: chmod +x ci/unit-test-app.sh && ci/unit-test-app.sh
+      - name: Upload repo
+        uses: actions/upload-artifact@v2
+        with:
+          name: code
+          path: .
+      - name: upload app code
+        uses: actions/upload-artifact@v2
+        with:
+          name: app_code
+          path: app/build/libs/app-0.1-all.jar
+  Performance-test:
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: code
+          path: .
+      - name: Echo env
+        run: echo $GITHUB_SHA
+      - name: Execute performance test
+        run: chmod +x ci/performance-test.sh && ci/performance-test.sh
