@@ -79,5 +79,7 @@ jobs:
         with:
           name: code
           path: .
+      - name: Echo env
+        run: echo $GITHUB_SHA
       - name: Execute performance test
         run: chmod +x ci/performance-test.sh && GIT_COMMIT="GA-$GITHUB_SHA" && ci/performance-test.sh
