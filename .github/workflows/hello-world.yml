@@ -1,9 +1,9 @@
 name: Java CI
 on: push
 env:
-  docker_username: ${{ secrects.DOCKER_USERNAME }}
-  docker_password: ${{ secrects.DOCKER_PASSWORD }}
-  GIT_COMMIT: ${{ GIT_COMMIT }}
+  docker_username: ${{ secrets.DOCKER_USERNAME }}
+  docker_password: ${{ secrets.DOCKER_PASSWORD }}
+  GIT_COMMIT: ${{ github.sha }}
 jobs:
   Clone-down:
     name: Clone down repo
@@ -50,3 +50,7 @@ jobs:
         with:
           name: app_code
           path: .
+      - name: build docker
+        run: chmod +x ci/build-docker.sh && ci/build-docker.sh
+      - name: push to dockerhub
+        run: chmod +x ci/push-docker.sh && ci/push-docker.sh
